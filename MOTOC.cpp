@@ -27,7 +27,7 @@ const double stepTime = 20000; 							// Size of the time step
 const int numEV = 22548;
 
 // Number of used threads
-const int threads = 24;
+const int threads = 16;
 
 #define QMN "./j50/qks_f_2._j_50_nmax_300_d_30401_dc_22548.dat"
 #define EVALUES "./j50/EN_f_2._j_50_nmax_300_d_30401_dc_22548.dat"
@@ -87,7 +87,7 @@ void *Thread(void *data) {
 
 	double *result = new double[numTimes];
 
-    for(int n = td->i; n < numEV; n += threads) {
+    for(int n = numEV - td->i - 1; n >= 0; n -= threads) {
 		time_t start = time(0);
 
         double sum = 0.0;       // For mean
