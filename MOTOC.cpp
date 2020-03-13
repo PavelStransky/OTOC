@@ -11,7 +11,7 @@
 // Constants of the Dicke model
 const double omega = 1;
 const double omega0 = 1;
-const double lambda = 2;
+const double lambda = 1;
 const double lambdac = 0.5*sqrt(omega*omega0);
 
 // Diagonalization parameters
