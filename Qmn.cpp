@@ -8,24 +8,24 @@
 #include <pthread.h>
 
 // Constants of the Dicke model
-double omega = 0.5;
-double omega0 = 0.64899375722968400992;
-double lambda = 0.66;
+double omega = 1;
+double omega0 = 1;
+double lambda = 1;
 
-#define EVECTORS "./EV_f_2.31723_j_100_nmax_300_d_60501_dc_16710.dat"
-#define EVALUES "./EN_f_2.31723_j_100_nmax_300_d_60501_dc_16710.dat"
-#define OUTPUT "./Qmn_f_2.31723_j_100_nmax_300_d_60501_dc_16710.dat"
+#define EVECTORS "./j50/EV_f_2._j_50_nmax_300_d_30401_dc_22548.dat"
+#define EVALUES "./j50/EN_f_2._j_50_nmax_300_d_30401_dc_22548.dat"
+#define OUTPUT "./j50/Qmn_f_2._j_50_nmax_300_d_30401_dc_22548.dat"
 
 // Diagonalization parameters
-int j = 100;
+int j = 50;
 int nmax = 300;
 int sz;			// Number of eigenvector elements
 double G2;		// Parameter of the model
 
 // Number of eigenvalues eigenvalues
-int numev = 16710;
+int numev = 22548;
 
-int threads = 32;
+int threads = 16;
 
 // Index
 inline int Index(int n, int m) {
