@@ -9,8 +9,8 @@
 #include <pthread.h>
 
 // Constants of the Dicke model
-const double omega = 1
-const double omega0 = 1
+const double omega = 1;
+const double omega0 = 1;
 const double lambda = 1;
 const double lambdac = 0.5*sqrt(omega*omega0);
 
@@ -31,7 +31,7 @@ const int threads = 8;
 
 #define QMN "./j50/qks_f_2._j_50_nmax_300_d_30401_dc_22548.dat"
 #define EVALUES "./j50/EN_f_2._j_50_nmax_300_d_30401_dc_22548.dat"
-#define RESULT "./j50motocs/OTOC_f_2._j_50_nmax_300_k_%d_T_1E6_20000_128_pq.dat"
+#define RESULT "./OTOC_f_2._j_50_nmax_300_k_%d_T_1E6_20000_128_pq.dat"
 	 
 void Error(const char *error) {
 	printf("%s", error);
