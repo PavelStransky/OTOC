@@ -14,24 +14,23 @@ const double omega0 = 1;
 const double lambda = 1;
 const double lambdac = 0.5*sqrt(omega*omega0);
 
+const int numTimes = 4000;								// Number of time steps
+
 // Diagonalization parameters
 const int j = 50;
 const int nmax = 300;
-const double G2 = 4.0 * lambda / (sqrt(2.0*j)*omega);	// Parameter of the model
-
-const int numTimes = 128;								// Number of time steps
-const double startTime = 1E6;	        				// First time
-const double stepTime = 20000; 							// Size of the time step
 
 // Number of eigenvalues
 const int numEV = 22548;
 
 // Number of used threads
-const int threads = 16;
+const int threads = 24;
+
+#define THRESHOLD 1E-6
 
 #define QMN "./j50/qks_f_2._j_50_nmax_300_d_30401_dc_22548.dat"
 #define EVALUES "./j50/EN_f_2._j_50_nmax_300_d_30401_dc_22548.dat"
-#define RESULT "./j50motocs/OTOC_f_2._j_50_nmax_300_k_%d_T_1E6_20000_128_pq.dat"
+#define RESULT "./j50motocs/OTOC_f_2._j_50_nmax_300_k_%d_pq.dat"
 	 
 void Error(const char *error) {
 	printf("%s", error);
@@ -86,40 +85,53 @@ void *Thread(void *data) {
 	double *times = td->times;
 
 	double *result = new double[numTimes];
+    double *dr = new double[numTimes];
+    double *di = new double[numTimes];
 
     for(int n = numEV - td->i - 1; n >= 0; n -= threads) {
 		time_t start = time(0);
 
+        for(int ti = 0; ti < numTimes; ti++) {
+            result[ti] = 0.0;
+            dr[ti] = 0.0;
+            di[ti] = 0.0;
+        }
+
+        for (int i = 0; i < numEV; i++) {
+            for (int j = 0; j < numEV; j++) {
+				double a = qmn[n*numEV + j] * qmn[j*numEV + i];
+                if(a > -THRESHOLD && a < THRESHOLD)
+                    continue;
+
+	    		double de1 = eigenValues[n] - eigenValues[j];
+				double de2 = eigenValues[j] - eigenValues[i];
+                
+                for(int ti = 0; ti < numTimes; ti++) {
+                    double t = times[ti];
+              
+                    dr[ti] += a * (de2 * cos(de1 * t) - de1 * cos(de2 * t));
+                    di[ti] += a * (de2 * sin(de1 * t) - de1 * sin(de2 * t));
+                }
+            }
+
+            for(int ti = 0; ti < numTimes; ti++) {
+                result[ti] += 0.25 * (dr[ti] * dr[ti] + di[ti] * di[ti]);
+                dr[ti] = 0.0;
+                di[ti] = 0.0;
+            }
+        }
+            
         double sum = 0.0;       // For mean
         double sum2 = 0.0;      // For variance
 
-        for(int ti = 0; ti < numTimes; ti++) {
-            double t = times[ti];
-
-            double dr = 0;
-            double di = 0;
-            
-            for (int i = 0; i < numEV; i++) {
-                double a = qmn[n*numEV + i];
-                double de1 = eigenValues[n] - eigenValues[i];
-                for (int j = 0; j < numEV; j++) {
-                    double b = a * qmn[i*numEV+j];
-                    double de2 = eigenValues[i] - eigenValues[j];
-                
-                    dr += b * (de2 * cos(de1 * t) - de1 * cos(de2 * t));
-                    di += b * (de2 * sin(de1 * t) - de1 * sin(de2 * t));
-                }
-            }
-            
-            double d = dr*dr + di*di;
-            result[ti] = d;
-
+        for(int ti = numTimes / 2; ti < numTimes; ti++) {
+            double d = result[ti];
             sum += d;
             sum2 += d*d;
         }
 
-        double mean = sum / numTimes;
-        double variance = sqrt(sum2 / numTimes - mean * mean);
+        double mean = 2 * sum / numTimes;
+        double variance = sqrt(2 * sum2 / numTimes - mean * mean);
         double r = variance / mean;
 
         printf("Thread %d calculated E(%d) = %0.3lf in %ld seconds. OTOC = %0.2lf +- %0.2lf (R = %0.3lf)\n", td->i, n, eigenValues[n], time(0) - start, mean, variance, r);
@@ -129,6 +141,7 @@ void *Thread(void *data) {
     	Save(fname, times, result);
     }
 
+    delete dr, di;
     delete result;
 
 	printf("Thread %d has finished.\n", td->i);
@@ -143,8 +156,14 @@ int main(int argc, char* argv[]) {
 	Import(qmn, eigenValues);
 
 	double *times = new double[numTimes];
-	for(int i = 0; i < numTimes; i++)
-		times[i] = startTime + stepTime*i;
+    const double stepTime1 = 0.1; 							// Size of the time step
+    const double startTime2 = 1E6;	        				// First time
+    const double stepTime2 = 1000;
+
+	for(int i = 0; i < numTimes / 2; i++) {
+		times[i] = stepTime1 * i;
+        times[i + numTimes / 2] = startTime2 + stepTime2 * i;
+    }
 
     time_t start = time(0);
     printf("Computing MOTOC in %d threads, %d time steps...\n", threads, numTimes);

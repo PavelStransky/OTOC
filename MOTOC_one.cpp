@@ -15,24 +15,25 @@ const double lambda = 1;
 const double lambdac = 0.5*sqrt(omega*omega0);
 
 // Diagonalization parameters
-const int j = 20;
+const int j = 50;
 const int nmax = 300;
-const double G2 = 2.0 * lambda / (sqrt(2.0*j)*omega);	// Parameter of the model
 
 const int numT = 1000;									// Number of time steps
 const double startT = 0;								// First time
 const double stepT = 0.1;								// Size of the time step
 
 // Number of eigenvalues
-const int numev = 10843;
+const int numev = 22548;
 
 // Number of used threads
-const int threads = 32;
+const int threads = 24;
 
-#define QMN "./j20/qks_f_2._j_20_nmax_300_d_12341_dc_10843.dat"
-#define EVALUES "./j20/EN_f_2._j_20_nmax_300_d_12341_dc_10843.dat"
-#define RESULT "./j20motocs/OTOC_f_2._j_20_nmax_300_k_%d_T_1E6_20000_128_pq.dat"
-	 
+#define THRESHOLD 1E-6
+
+#define QMN "./j50/qks_f_2._j_50_nmax_300_d_30401_dc_22548.dat"
+#define EVALUES "./j50/EN_f_2._j_50_nmax_300_d_30401_dc_22548.dat"
+#define RESULT "./j50motocs/OTOC_f_2._j_50_nmax_300_k_%d_T_1E6_20000_128_pq_a.dat"
+
 void Error(const char *error) {
 	printf("%s", error);
 	exit(0);
@@ -101,8 +102,11 @@ void *Thread(void *data) {
 	    	double di = 0;
 		
         	for (int j = 0; j < numev; j++) {
-	    		double de1 = eval[n] - eval[j];
 				double a = qmn[n*numev + j] * qmn[j*numev + i];
+                if(a > -THRESHOLD && a < THRESHOLD)
+                    continue;
+
+	    		double de1 = eval[n] - eval[j];
 				double de2 = eval[j] - eval[i];
 			
 				dr += a * (de2 * cos(de1 * t) - de1 * cos(de2 * t));

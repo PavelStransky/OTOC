@@ -14,7 +14,7 @@ double lambda = 1;
 
 #define EVECTORS "./j50/EV_f_2._j_50_nmax_300_d_30401_dc_22548.dat"
 #define EVALUES "./j50/EN_f_2._j_50_nmax_300_d_30401_dc_22548.dat"
-#define OUTPUT "./j50/Qmn_f_2._j_50_nmax_300_d_30401_dc_22548.dat"
+#define OUTPUT "./j50motocs/Qmn_f_2._j_50_nmax_300_d_30401_dc_22548.dat"
 
 // Diagonalization parameters
 int j = 50;
@@ -25,7 +25,7 @@ double G2;		// Parameter of the model
 // Number of eigenvalues eigenvalues
 int numev = 22548;
 
-int threads = 16;
+int threads = 32;
 
 // Index
 inline int Index(int n, int m) {
@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
 	double *eval = new double[numev];
 	Import(evec, eval);
 
-	G2 = 4.0 * lambda / (sqrt(2.0*j)*omega);
+	G2 = 2.0 * lambda / (sqrt(2.0*j)*omega);
 
 	int s = 0;
 	int k = 0;
